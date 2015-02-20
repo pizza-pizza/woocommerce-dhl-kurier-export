@@ -93,7 +93,7 @@ class wcKurierCSV {
 
 			$orders[$post_id] = array(
 				$order->billing_first_name,
-				$order->last_name,
+				$order->billing_last_name,
 				$order->shipping_address_1,
 				null,							 // TODO: split out the street & house number fields in orders
 				$order->shipping_postcode,
@@ -109,7 +109,7 @@ class wcKurierCSV {
 				'',
 				'',								// TODO: set up delivery time field for orders
 				'',
-				'M',							// TODO: need confirmation from the client
+				'L',
 				$weight,
 				'J',
 				'N'
