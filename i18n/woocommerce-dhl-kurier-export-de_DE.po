@@ -17,6 +17,10 @@ msgstr ""
 msgid "Export CSV for DHL Kurier"
 msgstr "CSV für DHL Kurier exportieren"
 
+#: woocommerce-dhl-kurier-export.php
+msgid "Shipping Type"
+msgstr "Versandart"
+
 #. Plugin Name of the plugin/theme
 msgid "WooCommerce DHL Kurier Export"
 msgstr ""

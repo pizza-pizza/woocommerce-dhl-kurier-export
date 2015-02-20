@@ -40,6 +40,8 @@ class wcKurierCSV {
 	public function __construct() {
 
 		load_plugin_textdomain( 'woocommerce-dhl-kurier-export', false, basename( dirname(__FILE__) ) . '/i18n' );
+		add_filter( 'manage_shop_order_posts_columns', array( $this, 'add_order_column_header' ), 20 );
+		add_action( 'manage_shop_order_posts_custom_column', array( $this, 'add_order_column' ), 20 );
 		add_action( 'admin_footer', array( $this, 'add_export_options' ) );
 		add_action( 'load-edit.php', array( $this, 'generate_csv' ) );
 
@@ -131,13 +133,41 @@ class wcKurierCSV {
 	}
 
 	/**
-	 * Let's display the shipment type for listed orders (same-day / overnight)
+	 * Let's display the shipping zone column header.
 	 */
-	public function add_order_display_logic() {
+	public function add_order_column_header( $columns ) {
 
-		/**
-		 * TODO: determine whether this order is delivered within the same-day zone based on zip code (TBD)
-		 */
+		if( !function_exists('woocommerce_get_shipping_zone') ) return $columns;
+		$new_cols = array();
+
+		foreach ( $columns as $k => $c ) {
+			if ( $k == 'shipping_address' ) $new_cols['order_location'] = 'Shipping Type';
+			$new_cols[$k] = $c;
+		}
+
+		return $new_cols;
+
+	}
+
+	/**
+	 * Let's display the shipping zone column.
+	 */
+	public function add_order_column( $column ) {
+
+		if( !function_exists('woocommerce_get_shipping_zone') ) return;
+		global $post, $woocommerce, $the_order;
+
+		if ( $column == 'order_location' ) {
+
+			$destination = array( 'destination' => array(
+				'postcode'	=> $the_order->shipping_postcode,
+				'state'		=> $the_order->shipping_state,
+				'country'	=> $the_order->shipping_country
+			));
+
+			$zone = woocommerce_get_shipping_zone( $destination );
+			echo ( $zone->zone_id == 0 ? 'Overnight' : $zone->zone_name );
+		}
 
 	}
 
