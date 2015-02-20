@@ -1,0 +1,36 @@
+# Copyright (C) 2015 WooCommerce DHL Kurier Export
+# This file is distributed under the same license as the WooCommerce DHL Kurier Export package.
+msgid ""
+msgstr ""
+"Project-Id-Version: WooCommerce DHL Kurier Export 1.0.0\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/support/plugin/woocommerce-dhl-"
+"kurier-export\n"
+"POT-Creation-Date: 2015-02-20 10:11:10+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2015-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: woocommerce-dhl-kurier-export.php:59
+msgid "Export CSV for DHL Kurier"
+msgstr "CSV für DHL Kurier exportieren"
+
+#. Plugin Name of the plugin/theme
+msgid "WooCommerce DHL Kurier Export"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"Adds a CSV export capability for DHL Kurier shipments on the WooCommerce "
+"orders overview screen."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "New Order Studios"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://neworderstudios.com/"
+msgstr ""

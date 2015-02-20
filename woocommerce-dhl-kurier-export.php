@@ -56,7 +56,7 @@ class wcKurierCSV {
 			?>
 			<script type="text/javascript">
 			jQuery('document').ready(function($){
-				$('<option>').val('generate_dhl_csv').text('<?php _e( 'Export CSV for DHL Kurier', 'woocommerce-dhl-kurier-export' )?>').appendTo("select[name='action'],select[name='action2']");
+				$('<option>').val('generate_dhl_csv').text('<?php _e( 'Export CSV for DHL Kurier', 'woocommerce-dhl-kurier-export' ) ?>').appendTo("select[name='action'],select[name='action2']");
 			});
 			</script>
 			<?php
