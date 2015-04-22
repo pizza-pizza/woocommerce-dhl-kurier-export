@@ -117,7 +117,7 @@ class wcKurierCSV {
 				'',
 				'N',
 				'',
-				'',								// TODO: set up delivery time field for orders
+				function_exists('get_field') ? get_field( 'preferred_delivery_time', $order->id ) : '',
 				'',
 				'L',
 				$weight,
