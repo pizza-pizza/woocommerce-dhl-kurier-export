@@ -95,7 +95,7 @@ class wcKurierCSV {
 
 			// Split out the house number
 			$matches = array();
-			$number = null;
+			$house_number = null;
 			if ( preg_match( '/(?P<address>[^\d]+) (?P<number>\d+.?)/', $order->shipping_address_1, $matches ) ) {
 				$street_address = $matches['address'];
 				$house_number = $matches['number'];
