@@ -149,7 +149,7 @@ class wcKurierCSV {
 		$new_cols = array();
 
 		foreach ( $columns as $k => $c ) {
-			if ( $k == 'shipping_address' ) $new_cols['order_location'] = 'Shipping Type';
+			if ( $k == 'shipping_address' ) $new_cols['order_location'] = _( 'Shipping Type', 'woocommerce-dhl-kurier-export' );
 			$new_cols[$k] = $c;
 		}
 
