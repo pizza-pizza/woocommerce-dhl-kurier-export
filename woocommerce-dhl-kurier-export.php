@@ -2,181 +2,222 @@
 /*----------------------------------------------------------------------------------------------------------------------
 Plugin Name: WooCommerce DHL Kurier Export
 Description: Adds a CSV export capability for DHL Kurier shipments on the WooCommerce orders overview screen.
-Version: 1.2.0
+Version: 1.3.0
 Author: New Order Studios
 Author URI: http://neworderstudios.com/
 ----------------------------------------------------------------------------------------------------------------------*/
 
-if ( is_admin() ) {
-    new wcKurierCSV();
+if (!defined('ABSPATH')) {
+    exit;
 }
 
-class wcKurierCSV {
+if (!class_exists('wcKurierCSV')) {
+	class wcKurierCSV {
 
-	protected $columns = array(	
-		'Empfänger Vorname',			// First name
-		'Empfänger Nachname',			// Last name
-		'Empfänger Straße',				// Street
-		'Empfänger Hausnummer',			// Number
-		'Empfänger PLZ',				// Postcode
-		'Empfänger Stadt',				// City
-		'Empfänger Adresszusatz',		// Address line 2
-		'Empfänger Telefonnummer',		// Phone
-		'Empfänger E-Mail',				// Email
-		'Abholdatum',					// Collection date
-		'Nachbarschaftszustellung',		// Neighbor delivery
-		'Name Nachbar',					// Neighbor name
-		'Kommentar Zustellung',			// Comment
-		'Leergut',						// Empties
-		'Anzahl Leergut',				// # Empties
-		'Zustellzeitfenster',			// Deilvery timing
-		'Sendungsnummer',				// Tracking #
-		'Größe',						// Size
-		'Gewicht',						// Weight
-		'Kühlpflichtig',				// Cooling
-		'Mehrweg'						// Reusable
-	);
+		protected $columns = array(	
+			'Empfänger Vorname',			// First name
+			'Empfänger Nachname',			// Last name
+			'Empfänger Straße',				// Street
+			'Empfänger Hausnummer',			// Number
+			'Empfänger PLZ',				// Postcode
+			'Empfänger Stadt',				// City
+			'Empfänger Adresszusatz',		// Address line 2
+			'Empfänger Telefonnummer',		// Phone
+			'Empfänger E-Mail',				// Email
+			'Abholdatum',					// Collection date
+			'Nachbarschaftszustellung',		// Neighbor delivery
+			'Name Nachbar',					// Neighbor name
+			'Kommentar Zustellung',			// Comment
+			'Leergut',						// Empties
+			'Anzahl Leergut',				// # Empties
+			'Zustellzeitfenster',			// Deilvery timing
+			'Sendungsnummer',				// Tracking #
+			'Größe',						// Size
+			'Gewicht',						// Weight
+			'Kühlpflichtig',				// Cooling
+			'Mehrweg'						// Reusable
+		);
 
-	public function __construct() {
+		public function __construct() {
 
-		load_plugin_textdomain( 'woocommerce-dhl-kurier-export', false, basename( dirname(__FILE__) ) . '/i18n' );
-		add_filter( 'manage_shop_order_posts_columns', array( $this, 'add_order_column_header' ), 20 );
-		add_action( 'manage_shop_order_posts_custom_column', array( $this, 'add_order_column' ), 20 );
-		add_action( 'admin_footer', array( $this, 'add_export_options' ) );
-		add_action( 'load-edit.php', array( $this, 'generate_csv' ) );
+			load_plugin_textdomain( 'woocommerce-dhl-kurier-export', false, basename( dirname(__FILE__) ) . '/i18n' );
+			add_filter( 'manage_shop_order_posts_columns', array( $this, 'add_order_column_header' ), 20 );
+			add_action( 'manage_shop_order_posts_custom_column', array( $this, 'add_order_column' ), 20 );
+			add_action( 'admin_footer', array( $this, 'add_export_options' ) );
+			add_action( 'woocommerce_checkout_after_customer_details', array( $this, 'add_checkout_preferred_delivery' ) );
+			add_action( 'woocommerce_checkout_update_order_meta', array( $this, 'update_preferred_delivery' ) );
+			add_action( 'load-edit.php', array( $this, 'generate_csv' ) );
 
-	}
-
-	/**
-	 * Let's add some JS to append our new CSV export option to the bulk actions list.
-	 */
-	public function add_export_options() {
-
-		global $post_type;
-
-		if ( $post_type == 'shop_order' ) {
-			?>
-			<script type="text/javascript">
-			jQuery('document').ready(function($){
-				$('<option>').val('generate_dhl_csv').text('<?php _e( 'Export CSV for DHL Kurier', 'woocommerce-dhl-kurier-export' ) ?>').appendTo("select[name='action'],select[name='action2']");
-			});
-			</script>
-			<?php
 		}
 
-	}
+		/**
+		 * Let's add some JS to append our new CSV export option to the bulk actions list.
+		 */
+		public function add_export_options() {
 
-	/**
-	 * Let's generate the CSV and send it to the browser.
-	 */
-	public function generate_csv() {
+			global $post_type;
 
-		$wp_list_table = _get_list_table( 'WP_Posts_List_Table' );
-		$action = $wp_list_table->current_action();
-		
-		// Do we want to get involved?
-		if ( strpos( $action, 'generate_dhl_csv' ) === false ) return;
-
-		// Yes.
-		$post_ids = array_map( 'absint', (array) $_REQUEST['post'] );
-		$orders = array();
-		$psv = ''; # implode( '|', $this->columns );
-
-		foreach ( $post_ids as $post_id ) {
-			$order = wc_get_order( $post_id );
-
-			$weight = 0;
-			foreach( $order->get_items() as $item ) {
-				if ( $item['product_id'] > 0 ) {
-					$_product = $order->get_product_from_item( $item );
-					if ( ! $_product->is_virtual() ) $weight += $_product->get_weight() * $item['qty'];
-				}
+			if ( $post_type == 'shop_order' ) {
+				?>
+				<script type="text/javascript">
+				jQuery('document').ready(function($){
+					$('<option>').val('generate_dhl_csv').text('<?php _e( 'Export CSV for DHL Kurier', 'woocommerce-dhl-kurier-export' ) ?>').appendTo("select[name='action'],select[name='action2']");
+				});
+				</script>
+				<?php
 			}
 
-			// Split out the house number
-			$matches = array();
-			$house_number = null;
-			if ( preg_match( '/(?P<address>[^\d]+) (?P<number>\d+.?)/', $order->shipping_address_1, $matches ) ) {
-				$street_address = $matches['address'];
-				$house_number = (int)$matches['number'];
-			} else $street_address = $order->shipping_address_1;
-
-			$orders[$post_id] = array(
-				$order->billing_first_name,
-				$order->billing_last_name,
-				$street_address,
-				$house_number,
-				$order->shipping_postcode,
-				$order->shipping_city,
-				$order->shipping_address_2,
-				$order->billing_phone,
-				$order->billing_email,
-				date( 'Ymd' ),
-				'N',
-				'',
-				'',
-				'N',
-				'',
-				function_exists('get_field') ? get_field( 'preferred_delivery_time', $order->id ) : '',
-				'',
-				'L',
-				'10', // Using a fixed 10kg weight instead of $weight, per GWI
-				'J',
-				'J'
-			);
-
-			$psv .= implode( '|', $orders[$post_id] ) . "\n";
 		}
 
-		header( 'Content-Encoding: UTF-8' );
-		header( 'Content-Type: text/csv; charset=utf-8' );
-		header( 'Content-Disposition: attachment; filename=kurier_orders_' . date( 'Ymd' ) . '.csv' );
-		header( 'Content-Transfer-Encoding: binary' );
-		header( 'Content-Length: ' . strlen( $psv ) );
+		/**
+		 * Let's generate the CSV and send it to the browser.
+		 */
+		public function generate_csv() {
 
-		$output = fopen('php://output', 'w');
-		fwrite( $output, "\xEF\xBB\xBF" . $psv );
-		die();
+			$wp_list_table = _get_list_table( 'WP_Posts_List_Table' );
+			$action = $wp_list_table->current_action();
+			
+			// Do we want to get involved?
+			if ( strpos( $action, 'generate_dhl_csv' ) === false ) return;
+
+			// Yes.
+			$post_ids = array_map( 'absint', (array) $_REQUEST['post'] );
+			$orders = array();
+			$psv = ''; # implode( '|', $this->columns );
+
+			foreach ( $post_ids as $post_id ) {
+				$order = wc_get_order( $post_id );
+
+				$weight = 0;
+				foreach( $order->get_items() as $item ) {
+					if ( $item['product_id'] > 0 ) {
+						$_product = $order->get_product_from_item( $item );
+						if ( ! $_product->is_virtual() ) $weight += $_product->get_weight() * $item['qty'];
+					}
+				}
+
+				// Split out the house number
+				$matches = array();
+				$house_number = null;
+				if ( preg_match( '/(?P<address>[^\d]+) (?P<number>\d+.?)/', $order->shipping_address_1, $matches ) ) {
+					$street_address = $matches['address'];
+					$house_number = (int)$matches['number'];
+				} else $street_address = $order->shipping_address_1;
+
+				$orders[$post_id] = array(
+					$order->billing_first_name,
+					$order->billing_last_name,
+					$street_address,
+					$house_number,
+					$order->shipping_postcode,
+					$order->shipping_city,
+					$order->shipping_address_2,
+					$order->billing_phone,
+					$order->billing_email,
+					date( 'Ymd' ),
+					'N',
+					'',
+					'',
+					'N',
+					'',
+					function_exists('get_field') ? get_field( 'preferred_delivery_time', $order->id ) : '',
+					'',
+					'L',
+					'10', // Using a fixed 10kg weight instead of $weight, per GWI
+					'J',
+					'J'
+				);
+
+				$psv .= implode( '|', $orders[$post_id] ) . "\n";
+			}
+
+			header( 'Content-Encoding: UTF-8' );
+			header( 'Content-Type: text/csv; charset=utf-8' );
+			header( 'Content-Disposition: attachment; filename=kurier_orders_' . date( 'Ymd' ) . '.csv' );
+			header( 'Content-Transfer-Encoding: binary' );
+			header( 'Content-Length: ' . strlen( $psv ) );
+
+			$output = fopen('php://output', 'w');
+			fwrite( $output, "\xEF\xBB\xBF" . $psv );
+			die();
+
+		}
+
+		/**
+		 * Let's display the shipping zone column header.
+		 */
+		public function add_order_column_header( $columns ) {
+
+			if( !function_exists('woocommerce_get_shipping_zone') ) return $columns;
+			$new_cols = array();
+
+			foreach ( $columns as $k => $c ) {
+				if ( $k == 'shipping_address' ) $new_cols['order_location'] = _( 'Shipping Type', 'woocommerce-dhl-kurier-export' );
+				$new_cols[$k] = $c;
+			}
+
+			return $new_cols;
+
+		}
+
+		/**
+		 * Let's display the shipping zone column.
+		 */
+		public function add_order_column( $column ) {
+
+			if( !function_exists('woocommerce_get_shipping_zone') ) return;
+			global $post, $woocommerce, $the_order;
+
+			if ( $column == 'order_location' ) {
+
+				$destination = array( 'destination' => array(
+					'postcode'	=> $the_order->shipping_postcode,
+					'state'		=> $the_order->shipping_state,
+					'country'	=> $the_order->shipping_country
+				));
+
+				$zone = woocommerce_get_shipping_zone( $destination );
+				echo ( $zone->zone_id == 0 ? 'Overnight' : $zone->zone_name );
+			}
+
+		}
+
+		/*
+		 * Let's add the preferred delivery dropdown on the checkout page.
+		 */
+		public function add_checkout_preferred_delivery() {
+
+			if( function_exists('get_field') ) {
+				$delivery_field = get_field_object( 'field_5537b78f95074' );
+				?>
+
+				<p class="form-row form-row-wide gwi-delivery-preference">
+					<label for="preferred_delivery_time" class="">Preferred Delivery Time</label>
+					<select name="preferred_delivery_time" id="preferred_delivery_time">
+						<option value=""></option>
+						<?php foreach ( $delivery_field['choices'] as $k => $c ) { ?>
+							<option value="<?php echo $k; ?>"><?php echo $k; ?></option>
+						<?php } ?>
+					</select>
+				</p>
+
+				<?php
+			}
+
+		}
+
+		/*
+		 * We want to write the delivery time preference.
+		 */
+		public function update_preferred_delivery( $order_id ) {
+
+			if ( $_POST['preferred_delivery_time'] ) {
+				update_field( 'field_5537b78f95074', $_POST['preferred_delivery_time'], $order_id );
+			}
+
+		}
 
 	}
 
-	/**
-	 * Let's display the shipping zone column header.
-	 */
-	public function add_order_column_header( $columns ) {
-
-		if( !function_exists('woocommerce_get_shipping_zone') ) return $columns;
-		$new_cols = array();
-
-		foreach ( $columns as $k => $c ) {
-			if ( $k == 'shipping_address' ) $new_cols['order_location'] = _( 'Shipping Type', 'woocommerce-dhl-kurier-export' );
-			$new_cols[$k] = $c;
-		}
-
-		return $new_cols;
-
-	}
-
-	/**
-	 * Let's display the shipping zone column.
-	 */
-	public function add_order_column( $column ) {
-
-		if( !function_exists('woocommerce_get_shipping_zone') ) return;
-		global $post, $woocommerce, $the_order;
-
-		if ( $column == 'order_location' ) {
-
-			$destination = array( 'destination' => array(
-				'postcode'	=> $the_order->shipping_postcode,
-				'state'		=> $the_order->shipping_state,
-				'country'	=> $the_order->shipping_country
-			));
-
-			$zone = woocommerce_get_shipping_zone( $destination );
-			echo ( $zone->zone_id == 0 ? 'Overnight' : $zone->zone_name );
-		}
-
-	}
-
+	new wcKurierCSV();
 }
