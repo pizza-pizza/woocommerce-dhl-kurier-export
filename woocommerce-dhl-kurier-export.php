@@ -2,7 +2,7 @@
 /*----------------------------------------------------------------------------------------------------------------------
 Plugin Name: WooCommerce DHL Kurier Export
 Description: Adds a CSV export capability for DHL Kurier shipments on the WooCommerce orders overview screen.
-Version: 1.0.0
+Version: 1.1.0
 Author: New Order Studios
 Author URI: http://neworderstudios.com/
 ----------------------------------------------------------------------------------------------------------------------*/
@@ -80,7 +80,7 @@ class wcKurierCSV {
 		// Yes.
 		$post_ids = array_map( 'absint', (array) $_REQUEST['post'] );
 		$orders = array();
-		$psv = implode( '|', $this->columns );
+		$psv = ''; # implode( '|', $this->columns );
 
 		foreach ( $post_ids as $post_id ) {
 			$order = wc_get_order( $post_id );
@@ -125,7 +125,7 @@ class wcKurierCSV {
 				'N'
 			);
 
-			$psv .= "\n" . implode( '|', $orders[$post_id] );
+			$psv .= ( $psv ? "\n" : '' ) . implode( '|', $orders[$post_id] );
 		}
 
 		header( 'Content-Encoding: UTF-8' );
