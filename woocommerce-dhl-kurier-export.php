@@ -120,9 +120,9 @@ class wcKurierCSV {
 				function_exists('get_field') ? get_field( 'preferred_delivery_time', $order->id ) : '',
 				'',
 				'L',
-				$weight,
+				'10', // Using a fixed 10kg weight instead of $weight, per GWI
 				'J',
-				'N'
+				'J'
 			);
 
 			$psv .= ( $psv ? "\n" : '' ) . implode( '|', $orders[$post_id] );
