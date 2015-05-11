@@ -2,7 +2,7 @@
 /*----------------------------------------------------------------------------------------------------------------------
 Plugin Name: WooCommerce DHL Kurier Export
 Description: Adds a CSV export capability for DHL Kurier shipments on the WooCommerce orders overview screen.
-Version: 1.4.0
+Version: 1.4.1
 Author: New Order Studios
 Author URI: http://neworderstudios.com/
 ----------------------------------------------------------------------------------------------------------------------*/
