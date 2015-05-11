@@ -44,7 +44,7 @@ if (!class_exists('wcKurierCSV')) {
 			add_filter( 'manage_shop_order_posts_columns', array( $this, 'add_order_column_header' ), 20 );
 			add_action( 'manage_shop_order_posts_custom_column', array( $this, 'add_order_column' ), 20 );
 			add_action( 'admin_footer', array( $this, 'add_export_options' ) );
-			add_action( 'woocommerce_checkout_after_customer_details', array( $this, 'add_checkout_preferred_delivery' ) );
+			add_action( 'gwi_delivery_time', array( $this, 'add_checkout_preferred_delivery' ) );
 			add_action( 'woocommerce_checkout_update_order_meta', array( $this, 'update_preferred_delivery' ) );
 			add_action( 'load-edit.php', array( $this, 'generate_csv' ) );
 
