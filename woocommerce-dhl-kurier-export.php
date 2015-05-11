@@ -104,6 +104,10 @@ if (!class_exists('wcKurierCSV')) {
 					$house_number = (int)$matches['number'];
 				} else $street_address = $order->shipping_address_1;
 
+        // sanitize phone number
+        $phone = preg_replace('/\s/', '', $order->billing_phone);
+        $phone = preg_replace('/^((0049)|(49)|(\+49))/', '0', $phone);
+
 				$orders[$post_id] = array(
 					$order->billing_first_name,
 					$order->billing_last_name,
@@ -112,7 +116,7 @@ if (!class_exists('wcKurierCSV')) {
 					$order->shipping_postcode,
 					$order->shipping_city,
 					$order->shipping_address_2,
-					$order->billing_phone,
+					$phone,
 					$order->billing_email,
 					date( 'Ymd' ),
 					'N',
