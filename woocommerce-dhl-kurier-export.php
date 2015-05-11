@@ -192,9 +192,8 @@ if (!class_exists('wcKurierCSV')) {
 				?>
 
 				<p class="form-row form-row-wide gwi-delivery-preference">
-					<label for="preferred_delivery_time" class="">Preferred Delivery Time</label>
+					<label for="preferred_delivery_time" class=""><?= __('Deine Wunschzeit'); ?></label>
 					<select name="preferred_delivery_time" id="preferred_delivery_time">
-						<option value=""></option>
 						<?php foreach ( $delivery_field['choices'] as $k => $c ) { ?>
 							<option value="<?php echo $k; ?>"><?php echo $k; ?></option>
 						<?php } ?>
