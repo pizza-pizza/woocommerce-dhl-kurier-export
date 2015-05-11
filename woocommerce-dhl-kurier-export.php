@@ -83,7 +83,7 @@ if (!class_exists('wcKurierCSV')) {
 			// Yes.
 			$post_ids = array_map( 'absint', (array) $_REQUEST['post'] );
 			$orders = array();
-			$psv = ''; # implode( '|', $this->columns );
+      $psv = implode( '|', $this->columns );
 
 			foreach ( $post_ids as $post_id ) {
 				$order = wc_get_order( $post_id );
