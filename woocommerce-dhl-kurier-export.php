@@ -2,7 +2,7 @@
 /*----------------------------------------------------------------------------------------------------------------------
 Plugin Name: WooCommerce DHL Kurier Export
 Description: Adds a CSV export capability for DHL Kurier shipments on the WooCommerce orders overview screen.
-Version: 1.4.1
+Version: 1.5.0
 Author: New Order Studios
 Author URI: http://neworderstudios.com/
 ----------------------------------------------------------------------------------------------------------------------*/
@@ -182,6 +182,9 @@ if (!class_exists('wcKurierCSV')) {
 
 				$zone = woocommerce_get_shipping_zone( $destination );
 				echo ( $zone->zone_id == 0 ? 'Overnight' : $zone->zone_name );
+
+				$delivery = get_field( 'preferred_delivery_date', $post->id );
+				if( $delivery ) echo "<br /><br />Delivery requested for " . $delivery;
 			}
 
 		}
@@ -191,12 +194,40 @@ if (!class_exists('wcKurierCSV')) {
 		 */
 		public function add_checkout_preferred_delivery() {
 
-			if( function_exists('get_field') ) {
+			if ( function_exists( 'get_field' ) ) {
 				$delivery_field = get_field_object( 'field_5537b78f95074' );
+				$date_options = null;
+
+				if ( !class_exists( 'GWIDeliveryEstimates' ) ) require_once( get_template_directory() . '/lib/delivery_estimates.php' );
+				if ( !function_exists( 'Roots\Sage\Extras\get_visitor_info' ) ) equire_once( get_template_directory() . '/lib/extras.php' );
+
+				$postcode = Roots\Sage\Extras\get_postcode_from_address(get_current_user_id());
+				if ( !$postcode ) $postcode = Roots\Sage\Extras\get_cookie_postcode();
+
+				if ( $postcode ) {
+					$gwi_delivery_estimates = new GWIDeliveryEstimates();
+					$delivery_info = $gwi_delivery_estimates->get_delivery_date( $postcode );
+
+					$start = (int)$delivery_info->format( 'N' );
+					$date_options = array();
+					for ( $i = 0; $i <= 5 - $start; $i++ ) {
+						$date_options[$delivery_info->format( 'Y-m-d' )] = $delivery_info->format( 'l d' );
+						$delivery_info->modify( '+1 day' );
+					}
+				}
 				?>
 
 				<p class="form-row form-row-wide gwi-delivery-preference">
-					<label for="preferred_delivery_time" class=""><?= __('Deine Wunschzeit'); ?></label>
+					<label for="preferred_delivery_time" class=""><?= __('Dein Lieferzeitraum'); ?></label>
+
+					<?php if ( $date_options ) { ?>
+						<select name="preferred_delivery_date" id="preferred_delivery_date">
+							<?php foreach ( $date_options as $k => $d ) { ?>
+								<option value="<?php echo $k; ?>"><?php echo $d; ?></option>
+							<?php } ?>
+						</select> um
+					<?php } ?>
+
 					<select name="preferred_delivery_time" id="preferred_delivery_time">
 						<?php foreach ( $delivery_field['choices'] as $k => $c ) { ?>
 							<option value="<?php echo $k; ?>"><?php echo $k; ?></option>
@@ -216,6 +247,9 @@ if (!class_exists('wcKurierCSV')) {
 
 			if ( $_POST['preferred_delivery_time'] ) {
 				update_field( 'field_5537b78f95074', $_POST['preferred_delivery_time'], $order_id );
+			}
+			if ( $_POST['preferred_delivery_date'] ) {
+				update_field( 'field_558d1a9b1bd2b', $_POST['preferred_delivery_date'], $order_id );
 			}
 
 		}
