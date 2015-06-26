@@ -2,7 +2,7 @@
 /*----------------------------------------------------------------------------------------------------------------------
 Plugin Name: WooCommerce DHL Kurier Export
 Description: Adds a CSV export capability for DHL Kurier shipments on the WooCommerce orders overview screen.
-Version: 1.5.2
+Version: 1.5.3
 Author: New Order Studios
 Author URI: http://neworderstudios.com/
 ----------------------------------------------------------------------------------------------------------------------*/
@@ -184,7 +184,7 @@ if (!class_exists('wcKurierCSV')) {
 				echo ( $zone->zone_id == 0 ? 'Overnight' : $zone->zone_name );
 
 				$delivery = get_field( 'preferred_delivery_date', $post->id );
-				if( $delivery ) echo "<br /><br />Delivery requested for " . $delivery;
+				if( $delivery ) echo "<br /><br />Gewünschte Lieferung: " . $delivery;
 			}
 
 		}
@@ -211,7 +211,7 @@ if (!class_exists('wcKurierCSV')) {
 					$start = (int)$delivery_info->format( 'N' );
 					$date_options = array();
 					for ( $i = 0; $i <= 5 - $start; $i++ ) {
-						$date_options[$delivery_info->format( 'Ymd' )] = date_i18n( 'l d', $delivery_info->format( 'U' ) );
+						$date_options[$delivery_info->format( 'Ymd' )] = date_i18n( 'l d.m', $delivery_info->format( 'U' ) );
 						$delivery_info->modify( '+1 day' );
 					}
 				}
