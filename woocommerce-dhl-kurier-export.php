@@ -2,7 +2,7 @@
 /*----------------------------------------------------------------------------------------------------------------------
 Plugin Name: WooCommerce DHL Kurier Export
 Description: Adds a CSV export capability for DHL Kurier shipments on the WooCommerce orders overview screen.
-Version: 1.5.3
+Version: 1.5.4
 Author: New Order Studios
 Author URI: http://neworderstudios.com/
 ----------------------------------------------------------------------------------------------------------------------*/
@@ -43,6 +43,7 @@ if (!class_exists('wcKurierCSV')) {
 			load_plugin_textdomain( 'woocommerce-dhl-kurier-export', false, basename( dirname(__FILE__) ) . '/i18n' );
 			add_filter( 'manage_shop_order_posts_columns', array( $this, 'add_order_column_header' ), 20 );
 			add_action( 'manage_shop_order_posts_custom_column', array( $this, 'add_order_column' ), 20 );
+			add_filter( 'manage_edit-shop_order_sortable_columns', array( $this, 'add_order_column_sortable' ), 20 );
 			add_action( 'admin_footer', array( $this, 'add_export_options' ) );
 			add_action( 'gwi_delivery_time', array( $this, 'add_checkout_preferred_delivery' ) );
 			add_action( 'woocommerce_checkout_update_order_meta', array( $this, 'update_preferred_delivery' ) );
@@ -156,12 +157,23 @@ if (!class_exists('wcKurierCSV')) {
 			$new_cols = array();
 
 			foreach ( $columns as $k => $c ) {
-				if ( $k == 'shipping_address' ) $new_cols['order_location'] = _( 'Shipping Type', 'woocommerce-dhl-kurier-export' );
+				if ( $k == 'shipping_address' ){
+					$new_cols['order_location'] = _( 'Shipping Type', 'woocommerce-dhl-kurier-export' );
+					$new_cols['order_shipdate'] = 'Sendungsdatum';
+				}
 				$new_cols[$k] = $c;
 			}
 
 			return $new_cols;
 
+		}
+
+		/**
+		 * Let's make the shipdate column sortable.
+		 */
+		public function add_order_column_sortable( $columns ) {
+			$columns['order_shipdate'] = 'Sendungsdatum';
+			return $columns;
 		}
 
 		/**
@@ -184,7 +196,13 @@ if (!class_exists('wcKurierCSV')) {
 				echo ( $zone->zone_id == 0 ? 'Overnight' : $zone->zone_name );
 
 				$delivery = get_field( 'preferred_delivery_date', $post->id );
-				if( $delivery ) echo "<br /><br />Gewünschte Lieferung: " . $delivery;
+				if ( $delivery ) echo "<br /><br />Gewünschte Lieferung: " . $delivery;
+			} elseif ( $column == 'order_shipdate' ) {
+				$delivery = get_field( 'preferred_delivery_date', $post->id );
+				if ( $delivery ) {
+					$ship_date = new DateTime( $delivery );
+					echo date_i18n( get_option( 'date_format' ), $ship_date->modify( '-1 day' )->format( 'U' ) );
+				}
 			}
 
 		}
