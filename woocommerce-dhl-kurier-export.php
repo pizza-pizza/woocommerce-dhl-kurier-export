@@ -2,7 +2,7 @@
 /*----------------------------------------------------------------------------------------------------------------------
 Plugin Name: WooCommerce DHL Kurier Export
 Description: Adds a CSV export capability for DHL Kurier shipments on the WooCommerce orders overview screen.
-Version: 1.5.4
+Version: 1.5.5
 Author: New Order Studios
 Author URI: http://neworderstudios.com/
 ----------------------------------------------------------------------------------------------------------------------*/
@@ -84,7 +84,7 @@ if (!class_exists('wcKurierCSV')) {
 			// Yes.
 			$post_ids = array_map( 'absint', (array) $_REQUEST['post'] );
 			$orders = array();
-      $psv = implode( '|', $this->columns ) . "\n";
+			$psv = implode( '|', $this->columns ) . "\n";
 
 			foreach ( $post_ids as $post_id ) {
 				$order = wc_get_order( $post_id );
@@ -105,9 +105,9 @@ if (!class_exists('wcKurierCSV')) {
 					$house_number = (int)$matches['number'];
 				} else $street_address = $order->shipping_address_1;
 
-        // sanitize phone number
-        $phone = preg_replace('/\s/', '', $order->billing_phone);
-        $phone = preg_replace('/^((0049)|(49)|(\+49))/', '0', $phone);
+				// sanitize phone number
+				$phone = preg_replace('/\s/', '', $order->billing_phone);
+				$phone = preg_replace('/^((0049)|(49)|(\+49))/', '0', $phone);
 
 				$orders[$post_id] = array(
 					$order->billing_first_name,
@@ -184,24 +184,23 @@ if (!class_exists('wcKurierCSV')) {
 			if( !function_exists('woocommerce_get_shipping_zone') ) return;
 			global $post, $woocommerce, $the_order;
 
+			$destination = array( 'destination' => array(
+				'postcode'	=> $the_order->shipping_postcode,
+				'state'		=> $the_order->shipping_state,
+				'country'	=> $the_order->shipping_country
+			));
+
+			$zone = woocommerce_get_shipping_zone( $destination );
+
 			if ( $column == 'order_location' ) {
-
-				$destination = array( 'destination' => array(
-					'postcode'	=> $the_order->shipping_postcode,
-					'state'		=> $the_order->shipping_state,
-					'country'	=> $the_order->shipping_country
-				));
-
-				$zone = woocommerce_get_shipping_zone( $destination );
 				echo ( $zone->zone_id == 0 ? 'Overnight' : $zone->zone_name );
-
 				$delivery = get_field( 'preferred_delivery_date', $post->id );
 				if ( $delivery ) echo "<br /><br />Gewünschte Lieferung: " . $delivery;
 			} elseif ( $column == 'order_shipdate' ) {
 				$delivery = get_field( 'preferred_delivery_date', $post->id );
 				if ( $delivery ) {
 					$ship_date = new DateTime( $delivery );
-					echo date_i18n( get_option( 'date_format' ), $ship_date->modify( '-1 day' )->format( 'U' ) );
+					echo date_i18n( get_option( 'date_format' ), $ship_date->modify( $zone->zone_id == 1 ? '+0 day' : '-1 day' )->format( 'U' ) );
 				}
 			}
 
