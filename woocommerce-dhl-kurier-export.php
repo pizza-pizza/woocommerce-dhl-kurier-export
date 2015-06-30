@@ -2,7 +2,7 @@
 /*----------------------------------------------------------------------------------------------------------------------
 Plugin Name: WooCommerce DHL Kurier Export
 Description: Adds a CSV export capability for DHL Kurier shipments on the WooCommerce orders overview screen.
-Version: 1.5.5
+Version: 1.5.6
 Author: New Order Studios
 Author URI: http://neworderstudios.com/
 ----------------------------------------------------------------------------------------------------------------------*/
@@ -44,6 +44,7 @@ if (!class_exists('wcKurierCSV')) {
 			add_filter( 'manage_shop_order_posts_columns', array( $this, 'add_order_column_header' ), 20 );
 			add_action( 'manage_shop_order_posts_custom_column', array( $this, 'add_order_column' ), 20 );
 			add_filter( 'manage_edit-shop_order_sortable_columns', array( $this, 'add_order_column_sortable' ), 20 );
+			add_action( 'pre_get_posts', array( $this, 'manage_order_column_sorting' ), 1 );
 			add_action( 'admin_footer', array( $this, 'add_export_options' ) );
 			add_action( 'gwi_delivery_time', array( $this, 'add_checkout_preferred_delivery' ) );
 			add_action( 'woocommerce_checkout_update_order_meta', array( $this, 'update_preferred_delivery' ) );
@@ -172,9 +173,24 @@ if (!class_exists('wcKurierCSV')) {
 		 * Let's make the shipdate column sortable.
 		 */
 		public function add_order_column_sortable( $columns ) {
+
 			$columns['order_shipdate'] = 'Sendungsdatum';
 			return $columns;
+
 		}
+
+		/**
+		 * Let's sort on the right meta field
+		 */
+		public function manage_order_column_sorting( $query ) {
+
+			if ( $query->is_main_query() && $query->get( 'orderby' ) == 'Sendungsdatum' ) {
+				$query->set( 'meta_key', 'preferred_delivery_date' );
+				$query->set( 'orderby', 'meta_value_num' );
+			}
+
+		}
+
 
 		/**
 		 * Let's display the shipping zone column.
