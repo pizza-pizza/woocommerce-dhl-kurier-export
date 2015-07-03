@@ -111,8 +111,8 @@ if (!class_exists('wcKurierCSV')) {
 				$phone = preg_replace('/^((0049)|(49)|(\+49))/', '0', $phone);
 
 				$orders[$post_id] = array(
-					$order->billing_first_name,
-					$order->billing_last_name,
+					$order->shipping_first_name,
+					$order->shipping_last_name,
 					$street_address,
 					$house_number,
 					$order->shipping_postcode,
